@@ -1,9 +1,9 @@
 package org.insa.graphs.model;
 
-import java.util.ArrayList;
+import java.util.ArrayList; 
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
-
 /**
  * <p>
  * Class representing a Node in a {@link Graph}.
@@ -155,5 +155,9 @@ public final class Node implements Comparable<Node> {
     public int compareTo(Node other) {
         return Integer.compare(getId(), other.getId());
     }
+
+	public Iterator<Arc> iterator() {
+		return Collections.unmodifiableList(this.successors).iterator();
+	}
 
 }

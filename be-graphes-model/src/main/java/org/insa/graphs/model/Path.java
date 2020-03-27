@@ -1,8 +1,10 @@
 package org.insa.graphs.model;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Collections;
 import java.util.List;
+import java.util.*;
 
 /**
  * <p>
@@ -30,13 +32,49 @@ public class Path {
      * @throws IllegalArgumentException If the list of nodes is not valid, i.e. two
      *         consecutive nodes in the list are not connected in the graph.
      * 
-     * @deprecated Need to be implemented.
+     *  Need to be implemented.
      */
     public static Path createFastestPathFromNodes(Graph graph, List<Node> nodes)
             throws IllegalArgumentException {
-        List<Arc> arcs = new ArrayList<Arc>();
-        // TODO:
-        return new Path(graph, arcs);
+    	List<Arc> arcs = new ArrayList<Arc>();
+        Node destination;
+        Node origine;
+        Arc arc;
+        Arc arc_plus_rapide = null;
+        
+        if (nodes.isEmpty()) { //0 noeud
+        	return new Path(graph);
+        }else if (nodes.size() == 1){ //1 seul noeud
+        	return new Path(graph, nodes.get(0));
+        }else {
+        	Iterator<Node> iterNodes = nodes.iterator();
+        	origine = iterNodes.next();
+        	//Parcours de tous les noeuds
+        	while(iterNodes.hasNext()) {
+        		destination = iterNodes.next();
+        		//Parcours de tous les successeurs du noeud
+        		Iterator<Arc> iterArcs = origine.getSuccessors().iterator();
+        		while(iterArcs.hasNext()) {
+        			arc = iterArcs.next();
+        			if (arc.getDestination().equals(destination)) {
+        				if (arc_plus_rapide == null) {
+        					arc_plus_rapide = arc;
+        				}
+        				if (arc.getMinimumTravelTime() < arc_plus_rapide.getMinimumTravelTime()) {
+        					arc_plus_rapide = arc;
+        				}
+        			}
+        		}
+        		if (arc_plus_rapide == null) {
+					throw new IllegalArgumentException();
+				}else {
+					arcs.add(arc_plus_rapide);
+					origine = destination;
+					arc_plus_rapide = null;
+        		}
+        	}
+        	return new Path(graph, arcs);
+        }
     }
 
     /**
@@ -51,12 +89,65 @@ public class Path {
      * @throws IllegalArgumentException If the list of nodes is not valid, i.e. two
      *         consecutive nodes in the list are not connected in the graph.
      * 
-     * @deprecated Need to be implemented.
+     *  Need to be implemented.
      */
     public static Path createShortestPathFromNodes(Graph graph, List<Node> nodes)
             throws IllegalArgumentException {
         List<Arc> arcs = new ArrayList<Arc>();
-        // TODO:
+        boolean arc_court_init = false;
+		Arc arc_court = null;
+		
+        /* Aucun noeud */
+		if (nodes.size() == 0) {
+			return new Path(graph);
+		}
+		/* Un noeud */
+		else if (nodes.size() == 1) {
+			return new Path(graph, nodes.get(0));
+		}
+		/* Au moins deux noeuds */
+		else {
+
+			Iterator<Node> nodeIte = nodes.iterator();
+			Node origine = nodeIte.next();
+
+			/* Parcours des noeuds */
+			while (nodeIte.hasNext()) {
+				Node destination = nodeIte.next();
+
+				/* Parcours des arcs dont le noeud est l'origine */
+				Iterator<Arc> arcIter = origine.iterator();
+				
+				while (arcIter.hasNext()) {
+					Arc arc = arcIter.next();
+					// Teste si l'arc mene bien au noeud souhaite
+					if (arc.getDestination().equals(destination)) {
+						/*
+						 * Si c'est le premier arc que l'on considere, 
+						 * on initialise arc_court avec cet arc
+						 */
+						if (!arc_court_init) {
+							arc_court = arc;
+							arc_court_init = true;
+						}
+						/* Sinon on regarde, si l'arc est plus court */
+						else if (arc.getLength() < arc_court.getLength()) {
+							arc_court = arc;
+						}
+					}
+				}
+				/* Si on n'a pas retenu d'arc, c'est que la liste de noeuds n'est pas valide */
+				if (arc_court == null) {
+					throw new IllegalArgumentException();
+				}
+				/* Sinon, on ajoute l'arc le plus court */
+				else {
+					arcs.add(arc_court);
+					origine = destination;
+					arc_court_init = false;
+				}
+			}
+		}
         return new Path(graph, arcs);
     }
 
